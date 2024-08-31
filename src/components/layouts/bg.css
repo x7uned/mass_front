@@ -1,0 +1,33 @@
+:root {
+	--background: #efeff3;
+	--text: #272a32;
+	--for-gradient: #cfd6ef;
+	--border: #dbdbe1;
+	--first: #f5f5f5;
+	--second: #eeeeee;
+	--third: #dde2f2;
+
+	.background {
+		background: linear-gradient(
+			132deg,
+			var(--first),
+			var(--second),
+			var(--third)
+		);
+		background-size: 400% 400%;
+		animation: Gradient 60s ease infinite;
+		overflow: hidden;
+	}
+}
+
+@keyframes Gradient {
+	0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
+}

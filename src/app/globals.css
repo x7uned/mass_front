@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+	--background: #efeff3;
+	--text: #272a32;
+	--for-gradient: #cfd6ef;
+	--border: #dbdbe1;
+	--first: #f5f5f5;
+	--second: #eeeeee;
+	--third: #dde2f2;
+	--main: #83dcb6;
+}
+
+.dark {
+	--background: #272a32;
+	--text: #efeff3;
+	--for-gradient: #334950;
+	--border: #2f323c;
+	--first: #2e353f;
+	--second: #353b46;
+	--third: #3a484d;
+	--main: #29a771;
+}
+
+@layer utilities {
+	.no-scrollbar::-webkit-scrollbar {
+		display: none;
+	}
+	/* Hide scrollbar for IE, Edge and Firefox */
+	.no-scrollbar {
+		-ms-overflow-style: none; /* IE and Edge */
+		scrollbar-width: none; /* Firefox */
+	}
+
+	.bg-gradient {
+		background: linear-gradient(
+			to right,
+			var(--for-gradient) 1%,
+			rgba(183, 183, 183, 0.102) 50%
+		);
+	}
+	.bg-center-gradient {
+		background: radial-gradient(
+			circle,
+			var(--for-gradient) 10%,
+			rgba(183, 183, 183, 0.102) 90%
+		);
+	}
+}
+
+body {
+	background-color: var(--background);
+	color: var(--text);
+	border-color: var(--border);
+
+	.glassmorphism {
+		/* box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37); */
+		backdrop-filter: blur(4px);
+		-webkit-backdrop-filter: blur(4px);
+	}
+}
