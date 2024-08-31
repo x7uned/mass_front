@@ -11,23 +11,15 @@ interface Message {
 	createdAt: string
 }
 
-interface UserStatus {
-	userId: number
-	online: boolean
-	lastOnline?: string
-}
-
 export function useChatSocket(contactId: number, accessToken: string) {
 	const [messages, setMessages] = useState<Message[]>([])
 	const [newMessage, setNewMessage] = useState<string>('')
-	const [userStatuses, setUserStatuses] = useState<Map<number, UserStatus>>(
-		new Map()
-	)
+	const [userStatuses, setUserStatuses] = useState<number[]>([])
 	const messagesEndRef = useRef<HTMLDivElement>(null)
 	const socketRef = useRef<Socket | null>(null)
 
 	const startFunc = () => {
-		if (socketRef.current) return // Не создаем соединение, если оно уже существует
+		if (socketRef.current) return
 		if (accessToken) {
 			console.log('Creating socket connection')
 			socketRef.current = io(socketUrl, {
@@ -39,7 +31,12 @@ export function useChatSocket(contactId: number, accessToken: string) {
 			const socket = socketRef.current
 
 			socket.emit('fetchMessages', { contactId })
-			socket.emit('getStatus', { contactId })
+
+			const getStatus = () => {
+				socket.emit('getStatus')
+			}
+
+			setInterval(getStatus, 15000)
 
 			socket.on('message', (message: Message) => {
 				console.log('Received message:', message)
@@ -53,12 +50,9 @@ export function useChatSocket(contactId: number, accessToken: string) {
 				scrollToBottom()
 			})
 
-			socket.on('userStatuses', (statuses: UserStatus[]) => {
+			socket.on('userStatuses', (statuses: number[]) => {
 				console.log('Received user statuses:', statuses)
-				const statusMap = new Map<number, UserStatus>(
-					statuses.map(status => [status.userId, status])
-				)
-				setUserStatuses(statusMap)
+				setUserStatuses(statuses)
 			})
 
 			socket.on('connect_error', error => {

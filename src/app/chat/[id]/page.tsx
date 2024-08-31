@@ -21,10 +21,12 @@ export interface User {
 	status: string
 	username: string
 	isOnline: boolean
+	friends: string[]
 	lastOnline: string
 }
 
-const timeAgo = (date: Date): string => {
+const timeAgo = (datestr: string): string => {
+	const date = new Date(datestr)
 	const now = new Date()
 	const diff = Math.floor((now.getTime() - date.getTime()) / 60000)
 	if (diff < 1) return 'Just now'
@@ -97,8 +99,6 @@ const ChatComponent = () => {
 		)
 	}
 
-	const receiverStatus = userStatuses.get(receiver?.id ?? 0)
-
 	return (
 		<ChatLayoutComponent>
 			<div className='w-full flex h-screen'>
@@ -121,13 +121,11 @@ const ChatComponent = () => {
 								<div className='flex flex-col ml-4'>
 									<p>{receiver.username}</p>
 									<div>
-										{receiver?.isOnline ? (
+										{userStatuses.includes(receiver.id) ? (
 											<p className='text-green-400'>Online</p>
 										) : (
 											<p className='text-gray-400'>
-												{receiver?.lastOnline
-													? timeAgo(new Date(receiver?.lastOnline))
-													: 'Offline'}
+												{timeAgo(receiver.lastOnline)}
 											</p>
 										)}
 									</div>
@@ -212,14 +210,17 @@ const ChatComponent = () => {
 									</p>
 									<p className='text-lg'>Email</p>
 									<p className='text-md text-[var(--main)]'>{receiver.email}</p>
-									<p className='text-lg'>Online</p>
-									{receiverStatus?.online ? (
+									<p
+										onClick={() => console.log(userStatuses)}
+										className='text-lg'
+									>
+										Online
+									</p>
+									{userStatuses.includes(receiver.id) ? (
 										<p className='text-green-400'>Online</p>
 									) : (
 										<p className='text-gray-400'>
-											{receiverStatus?.lastOnline
-												? timeAgo(new Date(receiverStatus.lastOnline))
-												: 'Offline'}
+											{timeAgo(receiver.lastOnline)}
 										</p>
 									)}
 								</div>
