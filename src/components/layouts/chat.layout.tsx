@@ -25,8 +25,10 @@ export interface Contact {
 
 const ChatLayoutComponent = ({
 	children,
+	statuses,
 }: Readonly<{
 	children: React.ReactNode
+	statuses: number[]
 }>) => {
 	const [contacts, setContacts] = useState<Contact[]>([])
 	const dispatch = useAppDispatch()
@@ -53,7 +55,11 @@ const ChatLayoutComponent = ({
 				<SearchBar />
 				<div className='flex mt-6 gap-2 flex-col'>
 					{contacts.map(contact => (
-						<ContactComponent key={contact.id} contact={contact} />
+						<ContactComponent
+							key={contact.id}
+							contact={contact}
+							isOnline={statuses?.includes(contact.id)}
+						/>
 					))}
 				</div>
 			</div>

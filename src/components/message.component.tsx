@@ -5,11 +5,20 @@ interface MessageProps {
 	sender: User | undefined
 	content: string
 	isOwnMessage: boolean
+	date: string
+}
+
+const formatTime = (datestr: string): string => {
+	const date = new Date(datestr)
+	const hours = date.getHours().toString().padStart(2, '0')
+	const minutes = date.getMinutes().toString().padStart(2, '0')
+	return `${hours}:${minutes}`
 }
 
 const MessageComponent: FC<MessageProps> = ({
 	sender,
 	content,
+	date,
 	isOwnMessage,
 }) => {
 	return (
@@ -25,6 +34,7 @@ const MessageComponent: FC<MessageProps> = ({
 					<p className='text-xs font-semibold mb-1'>{sender?.username}</p>
 				)}
 				<p className='text-sm'>{content}</p>
+				<p className='text-end'>{formatTime(date)}</p>
 			</div>
 		</div>
 	)

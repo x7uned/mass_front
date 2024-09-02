@@ -4,6 +4,7 @@ import { Contact } from './layouts/chat.layout'
 
 interface MessageProps {
 	contact: Contact
+	isOnline: boolean
 }
 
 const timeAgo = (input: string | Date): string => {
@@ -21,7 +22,7 @@ const timeAgo = (input: string | Date): string => {
 	return `${days} day(s) ago`
 }
 
-const ContactComponent: FC<MessageProps> = ({ contact }) => {
+const ContactComponent: FC<MessageProps> = ({ contact, isOnline }) => {
 	return (
 		<Link key={contact.id} href={`/chat/${contact.id}`}>
 			<div className='flex h-16 items-center gap-2 py-1 px-2 bg-[var(--second)] rounded-lg'>
@@ -35,7 +36,7 @@ const ContactComponent: FC<MessageProps> = ({ contact }) => {
 							})`,
 						}}
 						className={`bg-center border-green-400 ${
-							contact.user.isOnline ? 'border-2' : ''
+							isOnline ? 'border-2' : ''
 						} rounded-full w-12 h-12 bg-no-repeat bg-cover`}
 					></div>
 				</div>

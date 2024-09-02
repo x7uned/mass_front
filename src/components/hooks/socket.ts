@@ -3,7 +3,7 @@ import { io, Socket } from 'socket.io-client'
 
 const socketUrl = 'http://localhost:4444'
 
-interface Message {
+export interface Message {
 	id: number
 	content: string
 	ownerId: number
@@ -51,7 +51,7 @@ export function useChatSocket(contactId: number, accessToken: string) {
 			})
 
 			socket.on('userStatuses', (statuses: number[]) => {
-				console.log('Received user statuses:', statuses)
+				console.log('statuses updated')
 				setUserStatuses(statuses)
 			})
 
