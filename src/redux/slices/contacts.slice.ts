@@ -108,7 +108,7 @@ export const fetchFindInfo = createAsyncThunk(
 			)
 			return response.data
 		} catch (error) {
-			console.error('Something went wrong #findUser', error)
+			console.error('Something went wrong #findInfo', error)
 		}
 	}
 )

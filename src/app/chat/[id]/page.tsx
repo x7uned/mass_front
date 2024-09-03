@@ -31,6 +31,7 @@ const ChatComponentContainer = () => {
 	const { data: session } = useSession()
 	const {
 		messages = [],
+		contacts = [],
 		newMessage,
 		setNewMessage,
 		sendMessage,
@@ -77,11 +78,15 @@ const ChatComponentContainer = () => {
 	}
 
 	return (
-		<ChatLayoutComponent statuses={userStatuses}>
+		<ChatLayoutComponent contacts={contacts} statuses={userStatuses}>
 			<ChatComponent
 				receiver={receiver!}
 				userStatuses={userStatuses}
-				messages={messages}
+				messages={messages.filter(
+					m =>
+						m.contactId == Number(params.id) ||
+						m.ownerId == Number(session?.user.id)
+				)}
 				messagesEndRef={messagesEndRef}
 				setNewMessage={setNewMessage}
 				sendMessage={sendMessage}

@@ -42,7 +42,7 @@ const ContactComponent: FC<MessageProps> = ({ contact, isOnline }) => {
 				</div>
 				<div className='flex overflow-hidden items-start justify-center h-full w-2/3 text-center flex-col'>
 					<p>{contact.user.username}</p>
-					<p className='text-xs'>{timeAgo(contact?.updatedAt)}</p>
+					<p className='text-xs truncate'>{contact.lastMessage}</p>
 				</div>
 			</div>
 		</Link>

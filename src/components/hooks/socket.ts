@@ -11,8 +11,28 @@ export interface Message {
 	createdAt: string
 }
 
+export interface Contact {
+	contactId: number
+	id: number
+	userId: number
+	updatedAt: Date
+	lastMessage: string
+	messageCount: number
+	user: {
+		id: number
+		username: string
+		email: string
+		avatar: string | null
+		description: string | null
+		status: string
+		isOnline: boolean
+		lastOnline: Date | null
+	}
+}
+
 export function useChatSocket(contactId: number, accessToken: string) {
 	const [messages, setMessages] = useState<Message[]>([])
+	const [contacts, setContacts] = useState<Contact[]>([])
 	const [newMessage, setNewMessage] = useState<string>('')
 	const [userStatuses, setUserStatuses] = useState<number[]>([])
 	const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -31,6 +51,7 @@ export function useChatSocket(contactId: number, accessToken: string) {
 			const socket = socketRef.current
 
 			socket.emit('fetchMessages', { contactId })
+			socket.emit('fetchContacts')
 
 			const getStatus = () => {
 				socket.emit('getStatus')
@@ -42,12 +63,22 @@ export function useChatSocket(contactId: number, accessToken: string) {
 				console.log('Received message:', message)
 				setMessages(prevMessages => [...prevMessages, message])
 				scrollToBottom()
+				if (
+					!contacts.some(contact => contact.contactId === message.contactId)
+				) {
+					socket.emit('fetchContacts')
+				}
 			})
 
 			socket.on('fetchMessages', (fetchedMessages: Message[]) => {
 				console.log('Fetched messages:', fetchedMessages)
 				setMessages(fetchedMessages)
 				scrollToBottom()
+			})
+
+			socket.on('fetchContacts', (fetchedContacts: Contact[]) => {
+				console.log('Fetched contacts:', fetchedContacts)
+				setContacts(fetchedContacts)
 			})
 
 			socket.on('userStatuses', (statuses: number[]) => {
@@ -93,6 +124,7 @@ export function useChatSocket(contactId: number, accessToken: string) {
 
 	return {
 		messages,
+		contacts,
 		newMessage,
 		setNewMessage,
 		sendMessage,

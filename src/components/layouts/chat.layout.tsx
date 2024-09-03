@@ -1,12 +1,9 @@
 'use client'
 
-import { User } from '@/app/chat/[id]/page'
-import { fetchGetContacts } from '@/redux/slices/contacts.slice'
-import { useAppDispatch } from '@/redux/store'
 import { Poppins } from 'next/font/google'
-import { useEffect, useState } from 'react'
 import { BiMessageSquareEdit } from 'react-icons/bi'
 import ContactComponent from '../contact.component'
+import { Contact } from '../hooks/socket'
 import SearchBar from '../search.bar'
 
 const poppins = Poppins({
@@ -14,37 +11,15 @@ const poppins = Poppins({
 	weight: ['400', '500', '600', '700'],
 })
 
-export interface Contact {
-	id: number
-	userId: number
-	contactId: number
-	updatedAt: Date
-	messageCount: number
-	user: User
-}
-
 const ChatLayoutComponent = ({
 	children,
 	statuses,
+	contacts,
 }: Readonly<{
 	children: React.ReactNode
 	statuses: number[]
+	contacts: Contact[]
 }>) => {
-	const [contacts, setContacts] = useState<Contact[]>([])
-	const dispatch = useAppDispatch()
-
-	const getContacts = async () => {
-		const fetch = await dispatch(fetchGetContacts())
-
-		if (fetch.payload?.success && fetch.payload.contactResults) {
-			setContacts(fetch.payload.contactResults)
-		}
-	}
-
-	useEffect(() => {
-		getContacts()
-	}, [])
-
 	return (
 		<div className={`flex background w-full ${poppins.className}`}>
 			<div className='flex flex-col bg-[var(--first)] w-1/4 pt-6 px-6 h-screen'>

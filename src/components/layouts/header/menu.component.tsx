@@ -21,7 +21,7 @@ const MenuComponent = ({ menu, page }: { menu: boolean; page: string }) => {
 					<p>{menu ? 'Dashboard' : ''}</p>
 				</div>
 			</Link>
-			<Link href='/chat'>
+			<Link href='/chat/0'>
 				<div
 					className={`flex ${
 						menu
