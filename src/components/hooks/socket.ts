@@ -3,31 +3,43 @@ import { io, Socket } from 'socket.io-client'
 
 const socketUrl = 'http://localhost:4444'
 
+export interface User {
+	id: number
+	username: string
+	email: string
+	password: string
+	avatar?: string | null
+	description?: string | null
+	status: string
+	friends: number[]
+	lastOnline?: Date | null
+	isOnline: boolean
+	sentMessages: Message[]
+	contacts: Contact[]
+	contactOf: Contact[]
+}
+
 export interface Message {
 	id: number
 	content: string
-	ownerId: number
+	createdAt: Date
 	contactId: number
-	createdAt: string
+	ownerId: number
+	contact: Contact
+	owner: User
 }
 
 export interface Contact {
-	contactId: number
 	id: number
-	userId: number
+	ownerId: number
+	name: string
+	avatar?: string | null
+	members: User[]
 	updatedAt: Date
 	lastMessage: string
 	messageCount: number
-	user: {
-		id: number
-		username: string
-		email: string
-		avatar: string | null
-		description: string | null
-		status: string
-		isOnline: boolean
-		lastOnline: Date | null
-	}
+	owner: User
+	messages: Message[]
 }
 
 export function useChatSocket(contactId: number, accessToken: string) {
@@ -63,11 +75,7 @@ export function useChatSocket(contactId: number, accessToken: string) {
 				console.log('Received message:', message)
 				setMessages(prevMessages => [...prevMessages, message])
 				scrollToBottom()
-				if (
-					!contacts.some(contact => contact.contactId === message.contactId)
-				) {
-					socket.emit('fetchContacts')
-				}
+				if (message.contactId == contactId) socket.emit('fetchContacts')
 			})
 
 			socket.on('fetchMessages', (fetchedMessages: Message[]) => {

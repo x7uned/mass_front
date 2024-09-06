@@ -1,14 +1,21 @@
-import { User } from '@/app/chat/[id]/page'
 import { FC } from 'react'
+import { User } from './hooks/socket'
 
 interface MessageProps {
-	sender: User | undefined
+	sender:
+		| {
+				username: string
+				avatar: string | null | undefined
+				status: string
+				email: string
+		  }
+		| User
 	content: string
 	isOwnMessage: boolean
-	date: string
+	date: Date
 }
 
-const formatTime = (datestr: string): string => {
+const formatTime = (datestr: Date): string => {
 	const date = new Date(datestr)
 	const hours = date.getHours().toString().padStart(2, '0')
 	const minutes = date.getMinutes().toString().padStart(2, '0')

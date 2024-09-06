@@ -1,16 +1,15 @@
 'use client'
 
-import { User } from '@/app/chat/[id]/page'
 import MessageComponent from '@/components/message.component'
 import { useSession } from 'next-auth/react'
 import { Dispatch, RefObject, SetStateAction, useEffect, useRef } from 'react'
 import { IoIosCall, IoIosVideocam } from 'react-icons/io'
 import { IoInformationCircle } from 'react-icons/io5'
 import { TbSend } from 'react-icons/tb'
-import { Message } from './hooks/socket'
+import { Contact, Message } from './hooks/socket'
 
 interface ChatComponentProps {
-	receiver: User
+	contact: Contact
 	userStatuses: number[]
 	messages: Message[]
 	messagesEndRef: RefObject<HTMLDivElement>
@@ -19,7 +18,7 @@ interface ChatComponentProps {
 	newMessage: string
 }
 
-const timeAgo = (datestr: string): string => {
+const timeAgo = (datestr: string | Date): string => {
 	const date = new Date(datestr)
 	const now = new Date()
 	const diff = Math.floor((now.getTime() - date.getTime()) / 60000)
@@ -32,7 +31,7 @@ const timeAgo = (datestr: string): string => {
 }
 
 const ChatComponent = ({
-	receiver,
+	contact,
 	userStatuses,
 	messages,
 	messagesEndRef,
@@ -43,36 +42,53 @@ const ChatComponent = ({
 	const { data: session } = useSession()
 	const messagesContainerRef = useRef<HTMLDivElement>(null)
 
-	// Прокрутка вниз после добавления новых сообщений
+	const isOnline: boolean =
+		contact.members.length === 2
+			? userStatuses.includes(contact.members[0].id)
+			: false
+
+	const isGroup: boolean = contact.members.length > 2
+
 	useEffect(() => {
 		messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
 	}, [messages, messagesEndRef])
 
+	const contactInfo = isGroup
+		? {
+				username: contact.name,
+				avatar: contact.avatar,
+				status: 'Group Chat',
+				email: 'N/A',
+		  }
+		: contact.members[0]
+
 	return (
 		<div className='w-full flex h-screen'>
 			<div className='flex flex-col w-3/4 h-screen'>
-				{receiver ? (
+				{contact ? (
 					<div className='flex w-full justify-between p-4 h-1/6 bg-[var(--first)]'>
 						<div className='flex items-center'>
 							<div
 								style={{
 									backgroundImage: `url(${
-										receiver.avatar ||
-										`https://ui-avatars.com/api/?name=${receiver.username.trim()}`
+										contact.avatar ||
+										`https://ui-avatars.com/api/?name=${contactInfo.username.trim()}`
 									})`,
 								}}
 								className={`bg-center border-green-400 ${
-									userStatuses.includes(receiver.id) ? 'border-2' : ''
+									isOnline ? 'border-2' : ''
 								} rounded-full w-12 h-12 bg-no-repeat bg-cover`}
 							></div>
 							<div className='flex flex-col ml-4'>
-								<p>{receiver.username}</p>
+								<p>{contactInfo.username}</p>
 								<div>
-									{userStatuses.includes(receiver.id) ? (
+									{isOnline ? (
 										<p className='text-green-400'>Online</p>
 									) : (
 										<p className='text-gray-400'>
-											{timeAgo(receiver.lastOnline)}
+											{isGroup && contact.members[0].lastOnline
+												? timeAgo(contact.members[0].lastOnline)
+												: 'Offline'}
 										</p>
 									)}
 								</div>
@@ -104,7 +120,7 @@ const ChatComponent = ({
 							<MessageComponent
 								key={message.id}
 								content={message.content}
-								sender={receiver}
+								sender={contactInfo}
 								date={message.createdAt}
 								isOwnMessage={message.ownerId === (session?.user?.id || 0)}
 							/>
@@ -134,13 +150,13 @@ const ChatComponent = ({
 				</div>
 			</div>
 			<div className='flex justify-center w-1/4 h-screen bg-[var(--first)]'>
-				{receiver ? (
+				{contact ? (
 					<div className='flex flex-col h-screen w-full'>
 						<div
 							style={{
 								backgroundImage: `url(${
-									receiver.avatar ||
-									`https://ui-avatars.com/api/?name=${receiver.username.trim()}`
+									contactInfo.avatar ||
+									`https://ui-avatars.com/api/?name=${contactInfo.username.trim()}`
 								})`,
 							}}
 							className='bg-center w-full h-64 bg-no-repeat bg-cover'
@@ -149,18 +165,22 @@ const ChatComponent = ({
 							<div className='flex w-full p-2 pb-3 rounded-xl flex-col bg-[var(--second)]'>
 								<p className='text-lg'>Username</p>
 								<p className='text-md text-[var(--main)]'>
-									@{receiver.username}
+									@{contactInfo.username}
 								</p>
 								<p className='text-lg'>Status</p>
-								<p className='text-md text-[var(--main)]'>{receiver.status}</p>
+								<p className='text-md text-[var(--main)]'>
+									{contactInfo.status}
+								</p>
 								<p className='text-lg'>Email</p>
-								<p className='text-md text-[var(--main)]'>{receiver.email}</p>
+								<p className='text-md text-[var(--main)]'>
+									{contactInfo.email || 'N/A'}
+								</p>
 								<p className='text-lg'>Online</p>
-								{userStatuses.includes(receiver.id) ? (
+								{isOnline ? (
 									<p className='text-green-400'>Online</p>
 								) : (
 									<p className='text-gray-400'>
-										{timeAgo(receiver.lastOnline)}
+										{isGroup ? 'Offline' : 'Offline'}
 									</p>
 								)}
 							</div>
