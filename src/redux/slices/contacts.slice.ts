@@ -13,10 +13,6 @@ const initialState = {
 	contacts: [] as Contact[],
 }
 
-export interface CreateContactFetch {
-	contactId: number
-}
-
 export interface UpdateContactFetch {
 	id: string
 	name?: string
@@ -44,9 +40,25 @@ const contactsSlice = createSlice({
 
 export const fetchCreateContact = createAsyncThunk(
 	'contacts/fetchCreateContact',
-	async (contactData: CreateContactFetch) => {
+	async (contactId: number) => {
 		try {
-			const response = await axiosInstance.post('contacts/create', contactData)
+			const response = await axiosInstance.post('contacts/create', {
+				contactId,
+			})
+			return response.data
+		} catch (error) {
+			console.error('Something went wrong', error)
+		}
+	}
+)
+
+export const fetchCreateGroup = createAsyncThunk(
+	'contacts/fetchCreateGroup',
+	async (params: any) => {
+		try {
+			const response = await axiosInstance.post('contacts/group', {
+				params,
+			})
 			return response.data
 		} catch (error) {
 			console.error('Something went wrong', error)

@@ -37,7 +37,7 @@ const SearchBar = () => {
 
 	const create = async (id: number) => {
 		try {
-			const fetch = await dispatch(fetchCreateContact({ contactId: id }))
+			const fetch = await dispatch(fetchCreateContact(id))
 
 			console.log(fetch)
 

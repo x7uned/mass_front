@@ -29,7 +29,7 @@ const ChatComponentContainer = () => {
 	const [contact, setContact] = useState<Contact>()
 	const [loading, setLoading] = useState<boolean>(true)
 	const [errorScreen, setErrorScreen] = useState<boolean>(false)
-	const { data: session } = useSession()
+	const { data: session, status } = useSession()
 	const {
 		messages = [],
 		contacts = [],
@@ -38,6 +38,7 @@ const ChatComponentContainer = () => {
 		sendMessage,
 		messagesEndRef,
 		userStatuses,
+		fetchNewMessages,
 	} = useChatSocket(Number(params.id), session?.accessToken as string)
 
 	const findInfo = async () => {
@@ -61,7 +62,7 @@ const ChatComponentContainer = () => {
 		}
 	}
 
-	if (!session?.user) {
+	if (status == 'unauthenticated') {
 		router.push('/signin')
 	}
 
@@ -88,15 +89,12 @@ const ChatComponentContainer = () => {
 			<ChatComponent
 				contact={contact!}
 				userStatuses={userStatuses}
-				messages={messages.filter(
-					m =>
-						m.contactId == Number(params.id) ||
-						m.ownerId == Number(session?.user.id)
-				)}
+				messages={messages.filter(m => m.contactId == Number(params.id))}
 				messagesEndRef={messagesEndRef}
 				setNewMessage={setNewMessage}
 				sendMessage={sendMessage}
 				newMessage={newMessage}
+				fetchNewMessages={fetchNewMessages}
 			/>
 		</ChatLayoutComponent>
 	)

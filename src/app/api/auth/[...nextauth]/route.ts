@@ -46,7 +46,7 @@ const handler = NextAuth({
 						return null
 					}
 				} catch (error) {
-					console.error('Authorization error:', error)
+					console.error('Authorization error')
 					return null
 				}
 			},
@@ -115,7 +115,6 @@ const handler = NextAuth({
 						return null
 					}
 				} catch (error) {
-					console.error('Error fetching user data:', error)
 					return null
 				}
 			}

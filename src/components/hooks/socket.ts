@@ -45,6 +45,8 @@ export interface Contact {
 export function useChatSocket(contactId: number, accessToken: string) {
 	const [messages, setMessages] = useState<Message[]>([])
 	const [contacts, setContacts] = useState<Contact[]>([])
+	const [endOfChat, setEndOfChat] = useState(false)
+	const [gap, setGap] = useState<number>(0)
 	const [newMessage, setNewMessage] = useState<string>('')
 	const [userStatuses, setUserStatuses] = useState<number[]>([])
 	const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -62,7 +64,7 @@ export function useChatSocket(contactId: number, accessToken: string) {
 
 			const socket = socketRef.current
 
-			socket.emit('fetchMessages', { contactId })
+			socket.emit('fetchMessages', { contactId, gap })
 			socket.emit('fetchContacts')
 
 			const getStatus = () => {
@@ -72,16 +74,23 @@ export function useChatSocket(contactId: number, accessToken: string) {
 			setInterval(getStatus, 15000)
 
 			socket.on('message', (message: Message) => {
-				console.log('Received message:', message)
 				setMessages(prevMessages => [...prevMessages, message])
-				scrollToBottom()
-				if (message.contactId == contactId) socket.emit('fetchContacts')
+				if (message.contactId === contactId) socket.emit('fetchContacts')
 			})
 
 			socket.on('fetchMessages', (fetchedMessages: Message[]) => {
 				console.log('Fetched messages:', fetchedMessages)
 				setMessages(fetchedMessages)
-				scrollToBottom()
+				setGap(prev => prev + 1)
+			})
+
+			socket.on('fetchNewMessages', (fetchedMessages: Message[]) => {
+				console.log('Fetched NEW messages:', fetchedMessages)
+				if (fetchedMessages.length < 24) {
+					console.log(endOfChat)
+					setEndOfChat(true)
+				}
+				setMessages(prev => [...fetchedMessages, ...prev])
 			})
 
 			socket.on('fetchContacts', (fetchedContacts: Contact[]) => {
@@ -126,6 +135,19 @@ export function useChatSocket(contactId: number, accessToken: string) {
 		}
 	}
 
+	const fetchNewMessages = () => {
+		const socket = socketRef.current
+		if (!socket || endOfChat) {
+			console.log(
+				'End of chat reached or no socket connection. Skipping fetch.'
+			)
+			return
+		}
+
+		console.log('Fetching messages with gap:', gap)
+		socket.emit('fetchMessages', { contactId, gap })
+	}
+
 	const scrollToBottom = () => {
 		messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
 	}
@@ -138,5 +160,6 @@ export function useChatSocket(contactId: number, accessToken: string) {
 		sendMessage,
 		messagesEndRef,
 		userStatuses,
+		fetchNewMessages, // Не забываем возвращать функцию для подгрузки новых сообщений
 	}
 }

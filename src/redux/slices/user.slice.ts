@@ -76,6 +76,18 @@ export const fetchFindUser = createAsyncThunk(
 	}
 )
 
+export const fetchGetFriends = createAsyncThunk(
+	'user/fetchGetFriends',
+	async () => {
+		try {
+			const response = await axiosInstance.get(`auth/friends`)
+			return response.data
+		} catch (error) {
+			console.error('Something went wrong #getFriends', error)
+		}
+	}
+)
+
 export const fetchFindUsername = createAsyncThunk(
 	'user/fetchFindUsername',
 	async (params: string) => {

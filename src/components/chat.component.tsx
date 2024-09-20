@@ -1,8 +1,14 @@
 'use client'
 
 import MessageComponent from '@/components/message.component'
-import { useSession } from 'next-auth/react'
-import { Dispatch, RefObject, SetStateAction, useEffect, useRef } from 'react'
+import {
+	Dispatch,
+	RefObject,
+	SetStateAction,
+	useEffect,
+	useRef,
+	useState,
+} from 'react'
 import { IoIosCall, IoIosVideocam } from 'react-icons/io'
 import { IoInformationCircle } from 'react-icons/io5'
 import { TbSend } from 'react-icons/tb'
@@ -16,9 +22,10 @@ interface ChatComponentProps {
 	setNewMessage: Dispatch<SetStateAction<string>>
 	sendMessage: () => void
 	newMessage: string
+	fetchNewMessages: () => void
 }
 
-const timeAgo = (datestr: string | Date): string => {
+const timeAgo = (datestr: any): string => {
 	const date = new Date(datestr)
 	const now = new Date()
 	const diff = Math.floor((now.getTime() - date.getTime()) / 60000)
@@ -38,20 +45,47 @@ const ChatComponent = ({
 	setNewMessage,
 	sendMessage,
 	newMessage,
+	fetchNewMessages,
 }: ChatComponentProps) => {
-	const { data: session } = useSession()
 	const messagesContainerRef = useRef<HTMLDivElement>(null)
-
-	const isOnline: boolean =
-		contact.members.length === 2
-			? userStatuses.includes(contact.members[0].id)
-			: false
-
+	const [info, setInfo] = useState(true)
 	const isGroup: boolean = contact.members.length > 2
+
+	// Обработчик прокрутки
+	const handleScroll = () => {
+		if (messagesContainerRef.current) {
+			if (messagesContainerRef.current.scrollTop === 0) {
+				// Пользователь доскролил до верха
+				fetchNewMessages()
+			}
+		}
+	}
+
+	useEffect(() => {
+		const container = messagesContainerRef.current
+		if (container) {
+			container.addEventListener('scroll', handleScroll)
+		}
+
+		// Удаляем обработчик при размонтировании компонента
+		return () => {
+			if (container) {
+				container.removeEventListener('scroll', handleScroll)
+			}
+		}
+	}, [])
 
 	useEffect(() => {
 		messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
 	}, [messages, messagesEndRef])
+
+	// Обработчик нажатия клавиш
+	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.key === 'Enter') {
+			e.preventDefault()
+			sendMessage()
+		}
+	}
 
 	const contactInfo = isGroup
 		? {
@@ -64,7 +98,7 @@ const ChatComponent = ({
 
 	return (
 		<div className='w-full flex h-screen'>
-			<div className='flex flex-col w-3/4 h-screen'>
+			<div className='flex flex-col w-full h-screen'>
 				{contact ? (
 					<div className='flex w-full justify-between p-4 h-1/6 bg-[var(--first)]'>
 						<div className='flex items-center'>
@@ -75,29 +109,20 @@ const ChatComponent = ({
 										`https://ui-avatars.com/api/?name=${contactInfo.username.trim()}`
 									})`,
 								}}
-								className={`bg-center border-green-400 ${
-									isOnline ? 'border-2' : ''
-								} rounded-full w-12 h-12 bg-no-repeat bg-cover`}
+								className={`bg-center rounded-full w-12 h-12 bg-no-repeat bg-cover`}
 							></div>
 							<div className='flex flex-col ml-4'>
 								<p>{contactInfo.username}</p>
-								<div>
-									{isOnline ? (
-										<p className='text-green-400'>Online</p>
-									) : (
-										<p className='text-gray-400'>
-											{isGroup && contact.members[0].lastOnline
-												? timeAgo(contact.members[0].lastOnline)
-												: 'Offline'}
-										</p>
-									)}
-								</div>
 							</div>
 						</div>
 						<div className='flex gap-3 items-center'>
 							<IoIosCall className='text-gray-400' size='25px' />
 							<IoIosVideocam className='text-gray-400' size='25px' />
-							<IoInformationCircle className='text-gray-400' size='25px' />
+							<IoInformationCircle
+								onClick={() => setInfo(prev => !prev)}
+								className={info ? 'text-green-400' : 'text-gray-400'}
+								size='25px'
+							/>
 						</div>
 					</div>
 				) : (
@@ -107,7 +132,7 @@ const ChatComponent = ({
 				)}
 				<div
 					ref={messagesContainerRef}
-					className='flex flex-col h-5/6 px-4 overflow-y-auto no-scrollbar'
+					className='flex flex-col h-5/6 overflow-y-auto no-scrollbar'
 				>
 					{messages.length === 0 ? (
 						<div className='flex justify-center items-center h-full'>
@@ -117,13 +142,7 @@ const ChatComponent = ({
 						</div>
 					) : (
 						messages.map(message => (
-							<MessageComponent
-								key={message.id}
-								content={message.content}
-								sender={contactInfo}
-								date={message.createdAt}
-								isOwnMessage={message.ownerId === (session?.user?.id || 0)}
-							/>
+							<MessageComponent key={message.id} message={message} />
 						))
 					)}
 					<div ref={messagesEndRef} />
@@ -136,6 +155,7 @@ const ChatComponent = ({
 								onChange={e => setNewMessage(e.target.value)}
 								value={newMessage}
 								className='bg-[var(--second)] w-full h-12 focus:outline-none'
+								onKeyDown={handleKeyDown}
 							/>
 							<div className='flex'>
 								<button
@@ -149,7 +169,11 @@ const ChatComponent = ({
 					</div>
 				</div>
 			</div>
-			<div className='flex justify-center w-1/4 h-screen bg-[var(--first)]'>
+			<div
+				className={`flex justify-center ${
+					info ? 'w-2/5' : 'w-0'
+				} transition-all duration-300 h-screen overflow-y-auto bg-[var(--first)]`}
+			>
 				{contact ? (
 					<div className='flex flex-col h-screen w-full'>
 						<div
@@ -161,7 +185,7 @@ const ChatComponent = ({
 							}}
 							className='bg-center w-full h-64 bg-no-repeat bg-cover'
 						></div>
-						<div className='flex w-full mt-4 px-2 py-2'>
+						<div className='flex flex-col gap-2 w-full mt-4 px-2 py-2'>
 							<div className='flex w-full p-2 pb-3 rounded-xl flex-col bg-[var(--second)]'>
 								<p className='text-lg'>Username</p>
 								<p className='text-md text-[var(--main)]'>
@@ -175,20 +199,53 @@ const ChatComponent = ({
 								<p className='text-md text-[var(--main)]'>
 									{contactInfo.email || 'N/A'}
 								</p>
-								<p className='text-lg'>Online</p>
-								{isOnline ? (
-									<p className='text-green-400'>Online</p>
-								) : (
-									<p className='text-gray-400'>
-										{isGroup ? 'Offline' : 'Offline'}
-									</p>
-								)}
+								<p className='text-lg'>Message Count</p>
+								<p className='text-md text-[var(--main)]'>
+									{contact.messageCount || '0'}
+								</p>
 							</div>
+							{isGroup && (
+								<div className='flex w-full p-2 pb-3 rounded-xl flex-col bg-[var(--second)]'>
+									<p className='text-lg'>Members</p>
+									<div className='flex flex-col gap-2'>
+										{contact.members.map(member => (
+											<div
+												key={`${member.id}m`}
+												className='flex h-12 items-center gap-1'
+											>
+												<div className='flex w-1/5'>
+													<div
+														style={{
+															backgroundImage: `url(${
+																member.avatar ||
+																`https://ui-avatars.com/api/?name=${member.username.trim()}`
+															})`,
+														}}
+														className={`bg-center border-green-400 rounded-full w-10 h-10 bg-no-repeat bg-cover`}
+													></div>
+												</div>
+												<div className='flex flex-col w-4/5'>
+													<p>{member.username}</p>
+													{userStatuses.includes(member.id) ? (
+														<p className='text-green-400 h-6 truncate'>
+															Online
+														</p>
+													) : (
+														<p className='text-gray-400 h-6 truncate'>
+															Offline
+														</p>
+													)}
+												</div>
+											</div>
+										))}
+									</div>
+								</div>
+							)}
 						</div>
 					</div>
 				) : (
-					<div className='flex'>
-						<p>Skeleton</p>
+					<div className='flex justify-center items-center h-full'>
+						<p className='text-gray-500'>No contact info available.</p>
 					</div>
 				)}
 			</div>
