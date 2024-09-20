@@ -1,5 +1,11 @@
 # mass
 
+## Screenshots
+
+![Снимок экрана 2024-09-20 в 22 04 00](https://github.com/user-attachments/assets/f2f8e263-12fe-4f43-8567-57e5125f06c5)
+![Снимок экрана 2024-09-20 в 22 07 15](https://github.com/user-attachments/assets/db2b61c8-8ba7-49cf-931f-aff0a80ee870)
+
+
 ## Description
 
 `mass` is a frontend project built using [Next.js](https://nextjs.org/). It integrates authentication with NextAuth, state management with Redux Toolkit, form handling with React Hook Form, and styling using Tailwind CSS.
